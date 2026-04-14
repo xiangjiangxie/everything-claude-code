@@ -1,0 +1,38 @@
+{
+  "name": "eccforopencodecn",
+  "version": "1.0.0",
+  "description": "ECC for OpenCode 中文版 — Everything Claude Code 的 OpenCode 专用中文插件，全部规则、智能体、命令、技能均已翻译为中文",
+  "author": "ECC Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/affaan-m/everything-claude-code"
+  },
+  "keywords": [
+    "opencode",
+    "ai-coding",
+    "hooks",
+    "rules",
+    "skills",
+    "agents",
+    "code-review",
+    "tdd",
+    "security"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "eccforopencodecn": "install.js"
+  },
+  "scripts": {
+    "install-to": "node install.js",
+    "verify": "node verify.js"
+  },
+  "files": [
+    ".opencode/",
+    "install.js",
+    "verify.js",
+    "README.md"
+  ]
+}
