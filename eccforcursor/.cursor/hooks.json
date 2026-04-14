@@ -4,110 +4,117 @@
       {
         "command": "node .cursor/hooks/session-start.js",
         "event": "sessionStart",
-        "description": "Load previous context and detect environment"
+        "description": "加载上次会话上下文、检测项目类型和包管理器"
       }
     ],
     "sessionEnd": [
       {
         "command": "node .cursor/hooks/session-end.js",
         "event": "sessionEnd",
-        "description": "Persist session state and evaluate patterns"
+        "description": "会话结束标记"
       }
     ],
     "beforeShellExecution": [
       {
         "command": "npx block-no-verify@1.1.2",
         "event": "beforeShellExecution",
-        "description": "Block git hook-bypass flag to protect pre-commit, commit-msg, and pre-push hooks from being skipped"
+        "description": "阻止 git hook-bypass 标志，保护 pre-commit/commit-msg/pre-push 钩子"
       },
       {
-        "command": "node .cursor/hooks/before-shell-execution.js",
+        "command": "node .cursor/hooks/before-shell-execution-full.js",
         "event": "beforeShellExecution",
-        "description": "Tmux dev server blocker, tmux reminder, git push review"
+        "description": "完整Shell防护：dev server拦截、auto-tmux、tmux提醒、git push审查、提交质量、治理捕获、安全监控"
       }
     ],
     "afterShellExecution": [
       {
-        "command": "node .cursor/hooks/after-shell-execution.js",
+        "command": "node .cursor/hooks/after-shell-execution-full.js",
         "event": "afterShellExecution",
-        "description": "PR URL logging, build analysis"
+        "description": "PR URL记录、构建完成通知、治理事件捕获"
       }
     ],
     "afterFileEdit": [
       {
-        "command": "node .cursor/hooks/after-file-edit.js",
+        "command": "node .cursor/hooks/after-file-edit-full.js",
         "event": "afterFileEdit",
-        "description": "Auto-format, TypeScript check, console.log warning"
+        "description": "完整编辑后检查：格式化、类型检查、console.log警告、质量门禁、压缩建议、配置保护、治理捕获"
+      }
+    ],
+    "beforeFileWrite": [
+      {
+        "command": "node .cursor/hooks/before-file-write.js",
+        "event": "beforeFileWrite",
+        "description": "文件写入前检查：文档文件警告、压缩建议、配置保护"
       }
     ],
     "beforeMCPExecution": [
       {
-        "command": "node .cursor/hooks/before-mcp-execution.js",
+        "command": "node .cursor/hooks/before-mcp-execution-full.js",
         "event": "beforeMCPExecution",
-        "description": "MCP audit logging and untrusted server warning"
+        "description": "MCP调用审计日志 + 服务器健康检查"
       }
     ],
     "afterMCPExecution": [
       {
         "command": "node .cursor/hooks/after-mcp-execution.js",
         "event": "afterMCPExecution",
-        "description": "MCP result logging"
+        "description": "MCP结果记录"
       }
     ],
     "beforeReadFile": [
       {
         "command": "node .cursor/hooks/before-read-file.js",
         "event": "beforeReadFile",
-        "description": "Warn when reading sensitive files (.env, .key, .pem)"
+        "description": "敏感文件（.env/.key/.pem）读取警告"
       }
     ],
     "beforeSubmitPrompt": [
       {
         "command": "node .cursor/hooks/before-submit-prompt.js",
         "event": "beforeSubmitPrompt",
-        "description": "Detect secrets in prompts (sk-, ghp_, AKIA patterns)"
+        "description": "检测提示词中的API密钥、令牌等敏感信息"
       }
     ],
     "subagentStart": [
       {
         "command": "node .cursor/hooks/subagent-start.js",
         "event": "subagentStart",
-        "description": "Log agent spawning for observability"
+        "description": "记录子智能体启动信息"
       }
     ],
     "subagentStop": [
       {
         "command": "node .cursor/hooks/subagent-stop.js",
         "event": "subagentStop",
-        "description": "Log agent completion"
+        "description": "记录子智能体完成信息"
       }
     ],
     "beforeTabFileRead": [
       {
         "command": "node .cursor/hooks/before-tab-file-read.js",
         "event": "beforeTabFileRead",
-        "description": "Block Tab from reading secrets (.env, .key, .pem, credentials)"
+        "description": "阻止Tab读取敏感文件（.env/.key/.pem/credentials）"
       }
     ],
     "afterTabFileEdit": [
       {
         "command": "node .cursor/hooks/after-tab-file-edit.js",
         "event": "afterTabFileEdit",
-        "description": "Auto-format Tab edits"
+        "description": "Tab编辑后自动格式化"
       }
     ],
     "preCompact": [
       {
         "command": "node .cursor/hooks/pre-compact.js",
         "event": "preCompact",
-        "description": "Save state before context compaction"
+        "description": "上下文压缩前保存状态"
       }
     ],
     "stop": [
       {
-        "command": "node .cursor/hooks/stop.js",
+        "command": "node .cursor/hooks/stop-full.js",
         "event": "stop",
-        "description": "Console.log audit on all modified files"
+        "description": "完整停止检查：console.log审计、会话保存、模式评估、成本追踪、桌面通知"
       }
     ]
   }

@@ -22,12 +22,23 @@ const SOURCE_ROOT = __dirname;
 
 // 需要复制的目录及其在目标项目中的映射关系
 const COPY_MAP = [
+  // 核心 Cursor 配置
   { src: '.cursor/hooks.json', dest: '.cursor/hooks.json', type: 'file' },
   { src: '.cursor/hooks', dest: '.cursor/hooks', type: 'dir' },
   { src: '.cursor/rules', dest: '.cursor/rules', type: 'dir' },
   { src: '.cursor/skills', dest: '.cursor/skills', type: 'dir' },
+  // 运行时脚本（钩子核心逻辑 + 工具库 + CLI）
   { src: 'scripts', dest: '.cursor/ecc-scripts', type: 'dir' },
+  // 全部 30 个智能体
   { src: 'agents', dest: '.cursor/agents', type: 'dir' },
+  // 全部 60 个命令
+  { src: 'commands', dest: '.cursor/commands', type: 'dir' },
+  // 全部 135 个技能（完整版）
+  { src: 'skills', dest: '.cursor/ecc-skills', type: 'dir' },
+  // 上下文文件
+  { src: 'contexts', dest: '.cursor/contexts', type: 'dir' },
+  // MCP 服务器配置
+  { src: '.mcp.json', dest: '.cursor/mcp.json', type: 'file' },
 ];
 
 /**
@@ -106,12 +117,15 @@ eccforcursor 安装工具
   --help, -h   显示此帮助信息
 
 说明:
-  将 eccforcursor 的内容安装到目标项目的 .cursor/ 目录中，包括：
-  - 钩子配置和脚本（16 种自动化钩子）
+  将 eccforcursor 的全部内容安装到目标项目的 .cursor/ 目录中，包括：
+  - 钩子配置和脚本（16 种自动化钩子，含增强版功能）
   - 编码规则（39 条，覆盖 6 种编程语言）
-  - AI 技能定义（9 个专业技能）
-  - 智能体定义（8 个精选智能体）
-  - 运行时依赖脚本
+  - AI 技能定义（135 个技能 + .cursor/ 中的 10 个精选技能）
+  - 智能体定义（30 个智能体）
+  - 命令（60 个斜杠命令）
+  - MCP 服务器配置（GitHub、Context7、Exa 等）
+  - 上下文文件（开发、研究、审查）
+  - 运行时依赖脚本（钩子核心 + 工具库 + CLI）
 
   如果不指定目标路径，默认安装到当前目录。
 
@@ -209,8 +223,10 @@ function install(targetDir, dryRun) {
   console.log(`   2. 通过环境变量 ECC_HOOK_PROFILE 控制钩子级别:`);
   console.log(`      minimal  — 仅基本会话管理`);
   console.log(`      standard — 默认，包含格式化和安全检查`);
-  console.log(`      strict   — 全部钩子启用`);
-  console.log(`   3. 通过 ECC_DISABLED_HOOKS 禁用特定钩子\n`);
+  console.log(`      strict   — 全部钩子启用（含提交质量、tmux提醒等）`);
+  console.log(`   3. 通过 ECC_DISABLED_HOOKS 禁用特定钩子`);
+  console.log(`   4. MCP 配置已安装到 .cursor/mcp.json`);
+  console.log(`   5. 全部 30 个智能体、135 个技能、60 个命令已就绪\n`);
 }
 
 /**

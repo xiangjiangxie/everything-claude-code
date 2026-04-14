@@ -6,12 +6,17 @@
 
 ## 功能概览
 
+**与 Claude Code 完全对等的功能集：**
+
 | 模块 | 数量 | 说明 |
 |------|------|------|
-| 自动化钩子 | 16 种 | 会话管理、Shell 拦截、文件编辑检查、MCP 审计、安全防护 |
+| 自动化钩子 | 16 种事件 | 会话管理、Shell 拦截、文件编辑检查、MCP 审计、安全防护、质量门禁、治理捕获、桌面通知 |
 | 编码规则 | 39 条 | 覆盖通用最佳实践 + Go / Kotlin / PHP / Python / Swift / TypeScript |
-| AI 技能 | 9 个 | 文档查询、前端开发、Bun 运行时、内容引擎、投资材料等 |
-| 智能体 | 8 个 | 规划、架构、代码审查、TDD、安全审查、构建修复等 |
+| AI 技能 | 135 个 | 完整技能库（TDD、安全审查、API设计、前端/后端模式、深度研究等） |
+| 智能体 | 30 个 | 全部智能体（规划、架构、审查、TDD、安全、语言专用审查/构建修复等） |
+| 命令 | 60 个 | 全部斜杠命令（/tdd、/plan、/e2e、/code-review 等） |
+| MCP 配置 | 6 个服务器 | GitHub、Context7、Exa、Memory、Playwright、Sequential Thinking |
+| 上下文 | 3 个 | 开发、研究、审查上下文模板 |
 
 ## 快速开始
 
@@ -100,7 +105,7 @@ eccforcursor/
 │       ├── resolve-formatter.js # 格式化工具解析
 │       ├── hook-flags.js        # 钩子开关控制
 │       └── shell-split.js       # Shell 命令拆分
-├── agents/                      # 精选智能体（8 个）
+├── agents/                      # 全部智能体（30 个）
 │   ├── planner.md               # 实现规划专家
 │   ├── architect.md             # 系统架构师
 │   ├── code-reviewer.md         # 代码审查专家
@@ -108,7 +113,47 @@ eccforcursor/
 │   ├── security-reviewer.md     # 安全审查专家
 │   ├── build-error-resolver.md  # 构建错误修复
 │   ├── typescript-reviewer.md   # TypeScript 审查
-│   └── python-reviewer.md       # Python 审查
+│   ├── python-reviewer.md       # Python 审查
+│   ├── e2e-runner.md            # E2E 测试运行
+│   ├── refactor-cleaner.md      # 重构清理
+│   ├── doc-updater.md           # 文档更新
+│   ├── docs-lookup.md           # 文档查询
+│   ├── database-reviewer.md     # 数据库审查
+│   ├── go-reviewer.md           # Go 审查
+│   ├── rust-reviewer.md         # Rust 审查
+│   ├── java-reviewer.md         # Java 审查
+│   ├── kotlin-reviewer.md       # Kotlin 审查
+│   ├── cpp-reviewer.md          # C++ 审查
+│   ├── flutter-reviewer.md      # Flutter 审查
+│   ├── healthcare-reviewer.md   # 医疗合规审查
+│   ├── *-build-resolver.md      # 各语言构建修复（Go/Rust/Java/Kotlin/C++/PyTorch）
+│   ├── loop-operator.md         # 自主循环执行
+│   ├── harness-optimizer.md     # Harness 配置优化
+│   ├── chief-of-staff.md        # 通讯分发管理
+│   └── performance-optimizer.md # 性能优化
+├── commands/                    # 全部命令（60 个）
+│   ├── tdd.md                   # TDD 工作流
+│   ├── plan.md                  # 实现规划
+│   ├── e2e.md                   # E2E 测试
+│   ├── code-review.md           # 代码审查
+│   ├── build-fix.md             # 构建修复
+│   ├── learn.md                 # 模式提取
+│   ├── skill-create.md          # 技能创建
+│   └── ...                      # 更多命令
+├── skills/                      # 完整技能库（135 个）
+│   ├── tdd-workflow/            # TDD 工作流
+│   ├── security-review/         # 安全审查
+│   ├── api-design/              # API 设计
+│   ├── frontend-patterns/       # 前端模式
+│   ├── backend-patterns/        # 后端模式
+│   ├── deep-research/           # 深度研究
+│   ├── continuous-learning/     # 持续学习
+│   └── ...                      # 更多技能
+├── contexts/                    # 上下文模板（3 个）
+│   ├── dev.md                   # 开发上下文
+│   ├── research.md              # 研究上下文
+│   └── review.md                # 审查上下文
+├── .mcp.json                    # MCP 服务器配置
 ├── install.js                   # 一键安装脚本
 ├── verify.js                    # 安装验证脚本
 ├── package.json                 # 项目元数据
@@ -123,10 +168,11 @@ eccforcursor/
 |------|----------|------|
 | `sessionStart` | 会话启动 | 加载上次会话上下文、检测项目类型、报告包管理器 |
 | `sessionEnd` | 会话结束 | 保存会话状态 |
-| `beforeShellExecution` | Shell 执行前 | 拦截裸 dev server（强制 tmux）、git push 提醒 |
-| `afterShellExecution` | Shell 执行后 | PR URL 记录、构建完成通知 |
-| `afterFileEdit` | 文件编辑后 | 自动格式化、TypeScript 类型检查、console.log 警告 |
-| `beforeMCPExecution` | MCP 调用前 | MCP 调用审计日志 |
+| `beforeShellExecution` | Shell 执行前 | dev server 拦截、auto-tmux、tmux 提醒、git push 审查、提交质量检查、治理捕获、安全监控 |
+| `afterShellExecution` | Shell 执行后 | PR URL 记录、构建完成通知、治理事件捕获 |
+| `afterFileEdit` | 文件编辑后 | 自动格式化、TypeScript 类型检查、console.log 警告、质量门禁、压缩建议、配置保护、治理捕获 |
+| `beforeFileWrite` | 文件写入前 | 文档文件警告、压缩建议、配置保护 |
+| `beforeMCPExecution` | MCP 调用前 | MCP 调用审计日志 + 服务器健康检查 |
 | `afterMCPExecution` | MCP 调用后 | MCP 结果记录 |
 | `beforeReadFile` | 读文件前 | 敏感文件（.env / .key / .pem）读取警告 |
 | `beforeSubmitPrompt` | 提交提示前 | 检测提示词中的 API 密钥、令牌等 |
@@ -135,7 +181,7 @@ eccforcursor/
 | `beforeTabFileRead` | Tab 读文件前 | **阻止** Tab 读取敏感文件（exit 2） |
 | `afterTabFileEdit` | Tab 编辑后 | 自动格式化 Tab 编辑的文件 |
 | `preCompact` | 上下文压缩前 | 保存当前状态，防止压缩丢失信息 |
-| `stop` | 响应结束 | console.log 审计、会话保存、模式评估、成本追踪 |
+| `stop` | 响应结束 | console.log 审计、会话保存、模式评估、成本追踪、桌面通知 |
 
 ### 钩子配置
 
@@ -155,7 +201,9 @@ export ECC_DISABLED_HOOKS=pre:bash:dev-server-block,stop:cost-tracker
 | `standard` | 默认，包含格式化、类型检查、安全检查 |
 | `strict` | 全部启用，包含 tmux 提醒、git push 审查 |
 
-## 智能体详解
+## 智能体详解（全部 30 个）
+
+### 核心智能体
 
 | 智能体 | 用途 | 自动触发场景 |
 |--------|------|-------------|
@@ -165,8 +213,40 @@ export ECC_DISABLED_HOOKS=pre:bash:dev-server-block,stop:cost-tracker
 | **tdd-guide** | 测试驱动开发 | 新功能、Bug 修复 |
 | **security-reviewer** | 安全漏洞检测 | 处理用户输入、认证、API 端点 |
 | **build-error-resolver** | 构建错误修复 | 构建失败 |
-| **typescript-reviewer** | TypeScript 专项审查 | TypeScript 项目 |
-| **python-reviewer** | Python 专项审查 | Python 项目 |
+| **e2e-runner** | E2E Playwright 测试 | 关键用户流程 |
+| **refactor-cleaner** | 死代码清理 | 代码维护 |
+| **doc-updater** | 文档和代码地图更新 | 更新文档 |
+| **docs-lookup** | API 文档查询 | 库/API 文档问题 |
+| **loop-operator** | 自主循环执行 | 安全运行循环任务 |
+| **chief-of-staff** | 通讯分发管理 | 多渠道通讯 |
+| **harness-optimizer** | Harness 配置调优 | 可靠性、成本优化 |
+| **performance-optimizer** | 性能优化 | 性能瓶颈分析 |
+
+### 语言专用审查智能体
+
+| 智能体 | 用途 |
+|--------|------|
+| **typescript-reviewer** | TypeScript/JavaScript 代码审查 |
+| **python-reviewer** | Python 代码审查 |
+| **go-reviewer** | Go 代码审查 |
+| **rust-reviewer** | Rust 代码审查 |
+| **java-reviewer** | Java/Spring Boot 代码审查 |
+| **kotlin-reviewer** | Kotlin/Android/KMP 代码审查 |
+| **cpp-reviewer** | C++ 代码审查 |
+| **flutter-reviewer** | Flutter/Dart 代码审查 |
+| **database-reviewer** | PostgreSQL/Supabase 审查 |
+| **healthcare-reviewer** | 医疗合规代码审查 |
+
+### 语言专用构建修复智能体
+
+| 智能体 | 用途 |
+|--------|------|
+| **go-build-resolver** | Go 构建错误 |
+| **rust-build-resolver** | Rust 构建错误 |
+| **java-build-resolver** | Java/Maven/Gradle 构建错误 |
+| **kotlin-build-resolver** | Kotlin/Gradle 构建错误 |
+| **cpp-build-resolver** | C++ 构建错误 |
+| **pytorch-build-resolver** | PyTorch/CUDA 运行时错误 |
 
 ## 编码规则
 
@@ -185,6 +265,62 @@ export ECC_DISABLED_HOOKS=pre:bash:dev-server-block,stop:cost-tracker
 ### 语言专用规则（按 glob 模式激活）
 
 每种语言包含 3-5 条规则，覆盖编码风格、安全、测试、模式和钩子。
+
+## 命令一览（60 个）
+
+所有斜杠命令位于 `commands/` 目录，可在 Cursor 中通过规则或直接引用使用。
+
+### 核心命令
+
+| 命令 | 功能 |
+|------|------|
+| `/tdd` | 强制 TDD 工作流（先写测试再实现） |
+| `/plan` | 生成实现计划 |
+| `/e2e` | 生成并运行端到端测试 |
+| `/code-review` | 代码质量审查 |
+| `/build-fix` | 修复构建错误 |
+| `/learn` | 从会话中提取模式 |
+| `/skill-create` | 从 git 历史生成技能 |
+| `/verify` | 验证实现完整性 |
+| `/refactor-clean` | 重构和清理代码 |
+| `/update-docs` | 更新文档 |
+
+### 语言专用命令
+
+| 命令类别 | 包含 |
+|---------|------|
+| Go | `/go-review`, `/go-build`, `/go-test` |
+| Rust | `/rust-review`, `/rust-build`, `/rust-test` |
+| Kotlin | `/kotlin-review`, `/kotlin-build`, `/kotlin-test` |
+| C++ | `/cpp-review`, `/cpp-build`, `/cpp-test` |
+| Python | `/python-review` |
+
+### 工作流命令
+
+| 命令 | 功能 |
+|------|------|
+| `/sessions` | 会话管理 |
+| `/save-session` | 保存当前会话 |
+| `/resume-session` | 恢复历史会话 |
+| `/orchestrate` | 多工作树编排 |
+| `/loop-start` | 启动自主循环 |
+| `/loop-status` | 查看循环状态 |
+| `/quality-gate` | 质量门禁检查 |
+| `/test-coverage` | 测试覆盖率分析 |
+| `/harness-audit` | Harness 配置审计 |
+
+## MCP 服务器配置
+
+安装后在 `.cursor/mcp.json` 中配置了 6 个 MCP 服务器：
+
+| 服务器 | 功能 |
+|--------|------|
+| **github** | GitHub API 交互 |
+| **context7** | 最新库/框架文档查询 |
+| **exa** | 神经网络驱动的网络搜索 |
+| **memory** | 持久化记忆存储 |
+| **playwright** | 浏览器自动化测试 |
+| **sequential-thinking** | 结构化思维链 |
 
 ## 系统要求
 

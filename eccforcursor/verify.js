@@ -32,12 +32,25 @@ const REQUIRED_FILES = [
   '.cursor/hooks/after-tab-file-edit.js',
   '.cursor/hooks/pre-compact.js',
   '.cursor/hooks/stop.js',
+  '.cursor/hooks/before-shell-execution-full.js',
+  '.cursor/hooks/after-shell-execution-full.js',
+  '.cursor/hooks/after-file-edit-full.js',
+  '.cursor/hooks/before-file-write.js',
+  '.cursor/hooks/before-mcp-execution-full.js',
+  '.cursor/hooks/stop-full.js',
+  '.cursor/mcp.json',
 ];
 
 // 需要检查的目录（至少应含有文件）
 const REQUIRED_DIRS = [
   { path: '.cursor/rules', minFiles: 5, label: '编码规则' },
-  { path: '.cursor/skills', minFiles: 3, label: 'AI 技能' },
+  { path: '.cursor/skills', minFiles: 3, label: 'Cursor 精选技能' },
+  { path: '.cursor/agents', minFiles: 20, label: '智能体' },
+  { path: '.cursor/commands', minFiles: 50, label: '命令' },
+  { path: '.cursor/ecc-skills', minFiles: 50, label: '完整技能库' },
+  { path: '.cursor/ecc-scripts/hooks', minFiles: 20, label: '钩子核心脚本' },
+  { path: '.cursor/ecc-scripts/lib', minFiles: 7, label: '工具库' },
+  { path: '.cursor/contexts', minFiles: 2, label: '上下文模板' },
 ];
 
 /**

@@ -32,8 +32,12 @@
   },
   "files": [
     ".cursor/",
+    ".mcp.json",
     "scripts/",
     "agents/",
+    "commands/",
+    "skills/",
+    "contexts/",
     "install.js",
     "verify.js",
     "README.md"
