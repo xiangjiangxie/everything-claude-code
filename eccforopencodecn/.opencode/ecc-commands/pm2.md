@@ -1,63 +1,63 @@
-# PM2 Init
+# PM2 初始化
 
-Auto-analyze project and generate PM2 service commands.
+自动分析项目并生成 PM2 服务命令。
 
-**Command**: `$ARGUMENTS`
-
----
-
-## Workflow
-
-1. Check PM2 (install via `npm install -g pm2` if missing)
-2. Scan project to identify services (frontend/backend/database)
-3. Generate config files and individual command files
+**命令**：`$ARGUMENTS`
 
 ---
 
-## Service Detection
+## 工作流
 
-| Type | Detection | Default Port |
-|------|-----------|--------------|
+1. 检查 PM2（如缺失则通过 `npm install -g pm2` 安装）
+2. 扫描项目以识别服务（前端/后端/数据库）
+3. 生成配置文件和单独的命令文件
+
+---
+
+## 服务检测
+
+| 类型 | 检测方式 | 默认端口 |
+|------|---------|---------|
 | Vite | vite.config.* | 5173 |
 | Next.js | next.config.* | 3000 |
 | Nuxt | nuxt.config.* | 3000 |
-| CRA | react-scripts in package.json | 3000 |
-| Express/Node | server/backend/api directory + package.json | 3000 |
+| CRA | package.json 中的 react-scripts | 3000 |
+| Express/Node | server/backend/api 目录 + package.json | 3000 |
 | FastAPI/Flask | requirements.txt / pyproject.toml | 8000 |
 | Go | go.mod / main.go | 8080 |
 
-**Port Detection Priority**: User specified > .env > config file > scripts args > default port
+**端口检测优先级**：用户指定 > .env > 配置文件 > 脚本参数 > 默认端口
 
 ---
 
-## Generated Files
+## 生成的文件
 
 ```
 project/
-├── ecosystem.config.cjs              # PM2 config
-├── {backend}/start.cjs               # Python wrapper (if applicable)
+├── ecosystem.config.cjs              # PM2 配置
+├── {backend}/start.cjs               # Python 包装器（如适用）
 └── .claude/
     ├── commands/
-    │   ├── pm2-all.md                # Start all + monit
-    │   ├── pm2-all-stop.md           # Stop all
-    │   ├── pm2-all-restart.md        # Restart all
-    │   ├── pm2-{port}.md             # Start single + logs
-    │   ├── pm2-{port}-stop.md        # Stop single
-    │   ├── pm2-{port}-restart.md     # Restart single
-    │   ├── pm2-logs.md               # View all logs
-    │   └── pm2-status.md             # View status
+    │   ├── pm2-all.md                # 启动全部 + 监控
+    │   ├── pm2-all-stop.md           # 停止全部
+    │   ├── pm2-all-restart.md        # 重启全部
+    │   ├── pm2-{port}.md             # 启动单个 + 日志
+    │   ├── pm2-{port}-stop.md        # 停止单个
+    │   ├── pm2-{port}-restart.md     # 重启单个
+    │   ├── pm2-logs.md               # 查看所有日志
+    │   └── pm2-status.md             # 查看状态
     └── scripts/
-        ├── pm2-logs-{port}.ps1       # Single service logs
-        └── pm2-monit.ps1             # PM2 monitor
+        ├── pm2-logs-{port}.ps1       # 单服务日志
+        └── pm2-monit.ps1             # PM2 监控
 ```
 
 ---
 
-## Windows Configuration (IMPORTANT)
+## Windows 配置（重要）
 
 ### ecosystem.config.cjs
 
-**Must use `.cjs` extension**
+**必须使用 `.cjs` 扩展名**
 
 ```javascript
 module.exports = {
@@ -83,16 +83,16 @@ module.exports = {
 }
 ```
 
-**Framework script paths:**
+**框架脚本路径：**
 
-| Framework | script | args |
-|-----------|--------|------|
+| 框架 | script | args |
+|------|--------|------|
 | Vite | `node_modules/vite/bin/vite.js` | `--port {port}` |
 | Next.js | `node_modules/next/dist/bin/next` | `dev -p {port}` |
 | Nuxt | `node_modules/nuxt/bin/nuxt.mjs` | `dev --port {port}` |
-| Express | `src/index.js` or `server.js` | - |
+| Express | `src/index.js` 或 `server.js` | - |
 
-### Python Wrapper Script (start.cjs)
+### Python 包装器脚本 (start.cjs)
 
 ```javascript
 const { spawn } = require('child_process');
@@ -104,11 +104,11 @@ proc.on('close', (code) => process.exit(code));
 
 ---
 
-## Command File Templates (Minimal Content)
+## 命令文件模板（最小内容）
 
-### pm2-all.md (Start all + monit)
+### pm2-all.md（启动全部 + 监控）
 ````markdown
-Start all services and open PM2 monitor.
+启动所有服务并打开 PM2 监控。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 monit"
 ```
@@ -116,7 +116,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJE
 
 ### pm2-all-stop.md
 ````markdown
-Stop all services.
+停止所有服务。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 stop all
 ```
@@ -124,15 +124,15 @@ cd "{PROJECT_ROOT}" && pm2 stop all
 
 ### pm2-all-restart.md
 ````markdown
-Restart all services.
+重启所有服务。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 restart all
 ```
 ````
 
-### pm2-{port}.md (Start single + logs)
+### pm2-{port}.md（启动单个 + 日志）
 ````markdown
-Start {name} ({port}) and open logs.
+启动 {name}（{port}）并打开日志。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 logs {name}"
 ```
@@ -140,7 +140,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.
 
 ### pm2-{port}-stop.md
 ````markdown
-Stop {name} ({port}).
+停止 {name}（{port}）。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 stop {name}
 ```
@@ -148,7 +148,7 @@ cd "{PROJECT_ROOT}" && pm2 stop {name}
 
 ### pm2-{port}-restart.md
 ````markdown
-Restart {name} ({port}).
+重启 {name}（{port}）。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 restart {name}
 ```
@@ -156,7 +156,7 @@ cd "{PROJECT_ROOT}" && pm2 restart {name}
 
 ### pm2-logs.md
 ````markdown
-View all PM2 logs.
+查看所有 PM2 日志。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 logs
 ```
@@ -164,19 +164,19 @@ cd "{PROJECT_ROOT}" && pm2 logs
 
 ### pm2-status.md
 ````markdown
-View PM2 status.
+查看 PM2 状态。
 ```bash
 cd "{PROJECT_ROOT}" && pm2 status
 ```
 ````
 
-### PowerShell Scripts (pm2-logs-{port}.ps1)
+### PowerShell 脚本 (pm2-logs-{port}.ps1)
 ```powershell
 Set-Location "{PROJECT_ROOT}"
 pm2 logs {name}
 ```
 
-### PowerShell Scripts (pm2-monit.ps1)
+### PowerShell 脚本 (pm2-monit.ps1)
 ```powershell
 Set-Location "{PROJECT_ROOT}"
 pm2 monit
@@ -184,89 +184,89 @@ pm2 monit
 
 ---
 
-## Key Rules
+## 关键规则
 
-1. **Config file**: `ecosystem.config.cjs` (not .js)
-2. **Node.js**: Specify bin path directly + interpreter
-3. **Python**: Node.js wrapper script + `windowsHide: true`
-4. **Open new window**: `start wt.exe -d "{path}" pwsh -NoExit -c "command"`
-5. **Minimal content**: Each command file has only 1-2 lines description + bash block
-6. **Direct execution**: No AI parsing needed, just run the bash command
-
----
-
-## Execute
-
-Based on `$ARGUMENTS`, execute init:
-
-1. Scan project for services
-2. Generate `ecosystem.config.cjs`
-3. Generate `{backend}/start.cjs` for Python services (if applicable)
-4. Generate command files in `.claude/commands/`
-5. Generate script files in `.claude/scripts/`
-6. **Update project CLAUDE.md** with PM2 info (see below)
-7. **Display completion summary** with terminal commands
+1. **配置文件**：`ecosystem.config.cjs`（不是 .js）
+2. **Node.js**：直接指定 bin 路径 + interpreter
+3. **Python**：Node.js 包装器脚本 + `windowsHide: true`
+4. **打开新窗口**：`start wt.exe -d "{path}" pwsh -NoExit -c "command"`
+5. **最小内容**：每个命令文件只有 1-2 行描述 + bash 块
+6. **直接执行**：不需要 AI 解析，直接运行 bash 命令
 
 ---
 
-## Post-Init: Update CLAUDE.md
+## 执行
 
-After generating files, append PM2 section to project's `CLAUDE.md` (create if not exists):
+基于 `$ARGUMENTS`，执行初始化：
+
+1. 扫描项目中的服务
+2. 生成 `ecosystem.config.cjs`
+3. 为 Python 服务生成 `{backend}/start.cjs`（如适用）
+4. 在 `.claude/commands/` 中生成命令文件
+5. 在 `.claude/scripts/` 中生成脚本文件
+6. **更新项目 CLAUDE.md** 添加 PM2 信息（见下文）
+7. **显示完成摘要**及终端命令
+
+---
+
+## 初始化后：更新 CLAUDE.md
+
+生成文件后，将 PM2 章节追加到项目的 `CLAUDE.md`（如不存在则创建）：
 
 ````markdown
-## PM2 Services
+## PM2 服务
 
-| Port | Name | Type |
+| 端口 | 名称 | 类型 |
 |------|------|------|
 | {port} | {name} | {type} |
 
-**Terminal Commands:**
+**终端命令：**
 ```bash
-pm2 start ecosystem.config.cjs   # First time
-pm2 start all                    # After first time
+pm2 start ecosystem.config.cjs   # 首次
+pm2 start all                    # 首次之后
 pm2 stop all / pm2 restart all
 pm2 start {name} / pm2 stop {name}
 pm2 logs / pm2 status / pm2 monit
-pm2 save                         # Save process list
-pm2 resurrect                    # Restore saved list
+pm2 save                         # 保存进程列表
+pm2 resurrect                    # 恢复保存的列表
 ```
 ````
 
-**Rules for CLAUDE.md update:**
-- If PM2 section exists, replace it
-- If not exists, append to end
-- Keep content minimal and essential
+**CLAUDE.md 更新规则：**
+- 如果 PM2 章节已存在，替换它
+- 如果不存在，追加到末尾
+- 保持内容最小化和必要性
 
 ---
 
-## Post-Init: Display Summary
+## 初始化后：显示摘要
 
-After all files generated, output:
+所有文件生成后，输出：
 
 ```
-## PM2 Init Complete
+## PM2 初始化完成
 
-**Services:**
+**服务：**
 
-| Port | Name | Type |
+| 端口 | 名称 | 类型 |
 |------|------|------|
 | {port} | {name} | {type} |
 
-**Claude Commands:** /pm2-all, /pm2-all-stop, /pm2-{port}, /pm2-{port}-stop, /pm2-logs, /pm2-status
+**Claude 命令：** /pm2-all、/pm2-all-stop、/pm2-{port}、/pm2-{port}-stop、/pm2-logs、/pm2-status
 
-**Terminal Commands:**
-## First time (with config file)
+**终端命令：**
+## 首次（使用配置文件）
 pm2 start ecosystem.config.cjs && pm2 save
 
-## After first time (simplified)
-pm2 start all          # Start all
-pm2 stop all           # Stop all
-pm2 restart all        # Restart all
-pm2 start {name}       # Start single
-pm2 stop {name}        # Stop single
-pm2 logs               # View logs
-pm2 monit              # Monitor panel
-pm2 resurrect          # Restore saved processes
+## 之后（简化）
+pm2 start all          # 启动全部
+pm2 stop all           # 停止全部
+pm2 restart all        # 重启全部
+pm2 start {name}       # 启动单个
+pm2 stop {name}        # 停止单个
+pm2 logs               # 查看日志
+pm2 monit              # 监控面板
+pm2 resurrect          # 恢复保存的进程
 
-**Tip:** Run `pm2 save` after first start to enable simplified commands.
+**提示：** 首次启动后运行 `pm2 save` 以启用简化命令。
 ```

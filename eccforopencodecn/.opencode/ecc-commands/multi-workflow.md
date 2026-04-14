@@ -1,109 +1,109 @@
-# Workflow - Multi-Model Collaborative Development
+# 工作流 - 多模型协作开发
 
-Multi-model collaborative development workflow (Research → Ideation → Plan → Execute → Optimize → Review), with intelligent routing: Frontend → Gemini, Backend → Codex.
+多模型协作开发工作流（研究 → 构思 → 计划 → 执行 → 优化 → 审查），智能路由：前端 → Gemini，后端 → Codex。
 
-Structured development workflow with quality gates, MCP services, and multi-model collaboration.
+带质量门禁、MCP 服务和多模型协作的结构化开发工作流。
 
-## Usage
+## 用法
 
 ```bash
-/workflow <task description>
+/workflow <任务描述>
 ```
 
-## Context
+## 上下文
 
-- Task to develop: $ARGUMENTS
-- Structured 6-phase workflow with quality gates
-- Multi-model collaboration: Codex (backend) + Gemini (frontend) + Claude (orchestration)
-- MCP service integration (ace-tool, optional) for enhanced capabilities
+- 待开发任务：$ARGUMENTS
+- 带质量门禁的结构化 6 阶段工作流
+- 多模型协作：Codex（后端）+ Gemini（前端）+ Claude（编排）
+- MCP 服务集成（ace-tool，可选）用于增强能力
 
-## Your Role
+## 你的角色
 
-You are the **Orchestrator**, coordinating a multi-model collaborative system (Research → Ideation → Plan → Execute → Optimize → Review). Communicate concisely and professionally for experienced developers.
+你是**编排器**，协调多模型协作系统（研究 → 构思 → 计划 → 执行 → 优化 → 审查）。为有经验的开发者简洁、专业地沟通。
 
-**Collaborative Models**:
-- **ace-tool MCP** (optional) – Code retrieval + Prompt enhancement
-- **Codex** – Backend logic, algorithms, debugging (**Backend authority, trustworthy**)
-- **Gemini** – Frontend UI/UX, visual design (**Frontend expert, backend opinions for reference only**)
-- **Claude (self)** – Orchestration, planning, execution, delivery
+**协作模型**：
+- **ace-tool MCP**（可选）— 代码检索 + 提示词增强
+- **Codex** — 后端逻辑、算法、调试（**后端权威，可信赖**）
+- **Gemini** — 前端 UI/UX、视觉设计（**前端专家，后端意见仅供参考**）
+- **Claude（自身）** — 编排、规划、执行、交付
 
 ---
 
-## Multi-Model Call Specification
+## 多模型调用规范
 
-**Call syntax** (parallel: `run_in_background: true`, sequential: `false`):
+**调用语法**（并行：`run_in_background: true`，顺序：`false`）：
 
 ```
-# New session call
+# 新会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}- \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示词路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+Requirement: <增强后的需求（或未增强时的 $ARGUMENTS）>
+Context: <项目上下文和前几阶段的分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 预期输出格式
 EOF",
   run_in_background: true,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 
-# Resume session call
+# 恢复会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示词路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+Requirement: <增强后的需求（或未增强时的 $ARGUMENTS）>
+Context: <项目上下文和前几阶段的分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 预期输出格式
 EOF",
   run_in_background: true,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 ```
 
-**Model Parameter Notes**:
-- `{{GEMINI_MODEL_FLAG}}`: When using `--backend gemini`, replace with `--gemini-model gemini-3-pro-preview` (note trailing space); use empty string for codex
+**模型参数说明**：
+- `{{GEMINI_MODEL_FLAG}}`：使用 `--backend gemini` 时，替换为 `--gemini-model gemini-3-pro-preview `（注意末尾空格）；codex 时使用空字符串
 
-**Role Prompts**:
+**角色提示词**：
 
-| Phase | Codex | Gemini |
-|-------|-------|--------|
-| Analysis | `~/.claude/.ccg/prompts/codex/analyzer.md` | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
-| Planning | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/architect.md` |
-| Review | `~/.claude/.ccg/prompts/codex/reviewer.md` | `~/.claude/.ccg/prompts/gemini/reviewer.md` |
+| 阶段 | Codex | Gemini |
+|------|-------|--------|
+| 分析 | `~/.claude/.ccg/prompts/codex/analyzer.md` | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
+| 规划 | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/architect.md` |
+| 审查 | `~/.claude/.ccg/prompts/codex/reviewer.md` | `~/.claude/.ccg/prompts/gemini/reviewer.md` |
 
-**Session Reuse**: Each call returns `SESSION_ID: xxx`, use `resume xxx` subcommand for subsequent phases (note: `resume`, not `--resume`).
+**会话复用**：每次调用返回 `SESSION_ID: xxx`，后续阶段使用 `resume xxx` 子命令（注意：是 `resume`，不是 `--resume`）。
 
-**Parallel Calls**: Use `run_in_background: true` to start, wait for results with `TaskOutput`. **Must wait for all models to return before proceeding to next phase**.
+**并行调用**：使用 `run_in_background: true` 启动，使用 `TaskOutput` 等待结果。**必须等待所有模型返回后才能进入下一阶段**。
 
-**Wait for Background Tasks** (use max timeout 600000ms = 10 minutes):
+**等待后台任务**（使用最大超时 600000ms = 10 分钟）：
 
 ```
 TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 ```
 
-**IMPORTANT**:
-- Must specify `timeout: 600000`, otherwise default 30 seconds will cause premature timeout.
-- If still incomplete after 10 minutes, continue polling with `TaskOutput`, **NEVER kill the process**.
-- If waiting is skipped due to timeout, **MUST call `AskUserQuestion` to ask user whether to continue waiting or kill task. Never kill directly.**
+**重要提醒**：
+- 必须指定 `timeout: 600000`，否则默认 30 秒会导致过早超时。
+- 如果 10 分钟后仍未完成，继续使用 `TaskOutput` 轮询，**绝不终止进程**。
+- 如果因超时跳过等待，**必须调用 `AskUserQuestion` 询问用户是否继续等待或终止任务。绝不直接终止。**
 
 ---
 
-## Communication Guidelines
+## 沟通指南
 
-1. Start responses with mode label `[Mode: X]`, initial is `[Mode: Research]`.
-2. Follow strict sequence: `Research → Ideation → Plan → Execute → Optimize → Review`.
-3. Request user confirmation after each phase completion.
-4. Force stop when score < 7 or user does not approve.
-5. Use `AskUserQuestion` tool for user interaction when needed (e.g., confirmation/selection/approval).
+1. 回复以模式标签 `[模式：X]` 开头，初始为 `[模式：研究]`。
+2. 严格遵循顺序：`研究 → 构思 → 计划 → 执行 → 优化 → 审查`。
+3. 每个阶段完成后请求用户确认。
+4. 评分 < 7 或用户不批准时强制停止。
+5. 需要用户交互时使用 `AskUserQuestion` 工具（例如确认/选择/批准）。
 
-## When to Use External Orchestration
+## 何时使用外部编排
 
-Use external tmux/worktree orchestration when the work must be split across parallel workers that need isolated git state, independent terminals, or separate build/test execution. Use in-process subagents for lightweight analysis, planning, or review where the main session remains the only writer.
+当工作需要拆分到需要隔离 git 状态、独立终端或独立构建/测试执行的并行工作者时，使用外部 tmux/工作树编排。对于轻量级分析、规划或审查（主会话仍是唯一写入者），使用进程内子代理。
 
 ```bash
 node scripts/orchestrate-worktrees.js .claude/plan/workflow-e2e-test.json --execute
@@ -111,81 +111,81 @@ node scripts/orchestrate-worktrees.js .claude/plan/workflow-e2e-test.json --exec
 
 ---
 
-## Execution Workflow
+## 执行工作流
 
-**Task Description**: $ARGUMENTS
+**任务描述**：$ARGUMENTS
 
-### Phase 1: Research & Analysis
+### 阶段 1：研究与分析
 
-`[Mode: Research]` - Understand requirements and gather context:
+`[模式：研究]` - 理解需求并收集上下文：
 
-1. **Prompt Enhancement** (if ace-tool MCP available): Call `mcp__ace-tool__enhance_prompt`, **replace original $ARGUMENTS with enhanced result for all subsequent Codex/Gemini calls**. If unavailable, use `$ARGUMENTS` as-is.
-2. **Context Retrieval** (if ace-tool MCP available): Call `mcp__ace-tool__search_context`. If unavailable, use built-in tools: `Glob` for file discovery, `Grep` for symbol search, `Read` for context gathering, `Task` (Explore agent) for deeper exploration.
-3. **Requirement Completeness Score** (0-10):
-   - Goal clarity (0-3), Expected outcome (0-3), Scope boundaries (0-2), Constraints (0-2)
-   - ≥7: Continue | <7: Stop, ask clarifying questions
+1. **提示词增强**（如果 ace-tool MCP 可用）：调用 `mcp__ace-tool__enhance_prompt`，**将原始 $ARGUMENTS 替换为增强后的结果用于所有后续 Codex/Gemini 调用**。如不可用，按原样使用 `$ARGUMENTS`。
+2. **上下文检索**（如果 ace-tool MCP 可用）：调用 `mcp__ace-tool__search_context`。如不可用，使用内置工具：`Glob` 发现文件，`Grep` 搜索符号，`Read` 收集上下文，`Task`（Explore 代理）进行深入探索。
+3. **需求完整度评分**（0-10）：
+   - 目标清晰度（0-3）、预期结果（0-3）、范围边界（0-2）、约束条件（0-2）
+   - ≥7：继续 | <7：停止，提出澄清问题
 
-### Phase 2: Solution Ideation
+### 阶段 2：方案构思
 
-`[Mode: Ideation]` - Multi-model parallel analysis:
+`[模式：构思]` - 多模型并行分析：
 
-**Parallel Calls** (`run_in_background: true`):
-- Codex: Use analyzer prompt, output technical feasibility, solutions, risks
-- Gemini: Use analyzer prompt, output UI feasibility, solutions, UX evaluation
+**并行调用**（`run_in_background: true`）：
+- Codex：使用 analyzer 提示词，输出技术可行性、方案、风险
+- Gemini：使用 analyzer 提示词，输出 UI 可行性、方案、UX 评估
 
-Wait for results with `TaskOutput`. **Save SESSION_ID** (`CODEX_SESSION` and `GEMINI_SESSION`).
+使用 `TaskOutput` 等待结果。**保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
 
-**Follow the `IMPORTANT` instructions in `Multi-Model Call Specification` above**
+**遵循上面"多模型调用规范"中的"重要提醒"**
 
-Synthesize both analyses, output solution comparison (at least 2 options), wait for user selection.
+综合两个分析，输出方案对比（至少 2 个选项），等待用户选择。
 
-### Phase 3: Detailed Planning
+### 阶段 3：详细规划
 
-`[Mode: Plan]` - Multi-model collaborative planning:
+`[模式：计划]` - 多模型协作规划：
 
-**Parallel Calls** (resume session with `resume <SESSION_ID>`):
-- Codex: Use architect prompt + `resume $CODEX_SESSION`, output backend architecture
-- Gemini: Use architect prompt + `resume $GEMINI_SESSION`, output frontend architecture
+**并行调用**（使用 `resume <SESSION_ID>` 恢复会话）：
+- Codex：使用 architect 提示词 + `resume $CODEX_SESSION`，输出后端架构
+- Gemini：使用 architect 提示词 + `resume $GEMINI_SESSION`，输出前端架构
 
-Wait for results with `TaskOutput`.
+使用 `TaskOutput` 等待结果。
 
-**Follow the `IMPORTANT` instructions in `Multi-Model Call Specification` above**
+**遵循上面"多模型调用规范"中的"重要提醒"**
 
-**Claude Synthesis**: Adopt Codex backend plan + Gemini frontend plan, save to `.claude/plan/task-name.md` after user approval.
+**Claude 综合**：采纳 Codex 后端计划 + Gemini 前端计划，用户批准后保存到 `.claude/plan/task-name.md`。
 
-### Phase 4: Implementation
+### 阶段 4：实现
 
-`[Mode: Execute]` - Code development:
+`[模式：执行]` - 代码开发：
 
-- Strictly follow approved plan
-- Follow existing project code standards
-- Request feedback at key milestones
+- 严格遵循批准的计划
+- 遵循现有项目代码标准
+- 在关键里程碑请求反馈
 
-### Phase 5: Code Optimization
+### 阶段 5：代码优化
 
-`[Mode: Optimize]` - Multi-model parallel review:
+`[模式：优化]` - 多模型并行审查：
 
-**Parallel Calls**:
-- Codex: Use reviewer prompt, focus on security, performance, error handling
-- Gemini: Use reviewer prompt, focus on accessibility, design consistency
+**并行调用**：
+- Codex：使用 reviewer 提示词，重点：安全性、性能、错误处理
+- Gemini：使用 reviewer 提示词，重点：可访问性、设计一致性
 
-Wait for results with `TaskOutput`. Integrate review feedback, execute optimization after user confirmation.
+使用 `TaskOutput` 等待结果。整合审查反馈，用户确认后执行优化。
 
-**Follow the `IMPORTANT` instructions in `Multi-Model Call Specification` above**
+**遵循上面"多模型调用规范"中的"重要提醒"**
 
-### Phase 6: Quality Review
+### 阶段 6：质量审查
 
-`[Mode: Review]` - Final evaluation:
+`[模式：审查]` - 最终评估：
 
-- Check completion against plan
-- Run tests to verify functionality
-- Report issues and recommendations
-- Request final user confirmation
+- 对照计划检查完成情况
+- 运行测试验证功能
+- 报告问题和建议
+- 请求用户最终确认
 
 ---
 
-## Key Rules
+## 关键规则
 
-1. Phase sequence cannot be skipped (unless user explicitly instructs)
-2. External models have **zero filesystem write access**, all modifications by Claude
-3. **Force stop** when score < 7 or user does not approve
+1. 阶段顺序不可跳过（除非用户明确指示）
+2. 外部模型拥有**零文件系统写入权限**，所有修改由 Claude 执行
+3. 评分 < 7 或用户不批准时**强制停止**

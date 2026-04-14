@@ -1,158 +1,158 @@
-# Frontend - Frontend-Focused Development
+# 前端 - 前端专注开发
 
-Frontend-focused workflow (Research → Ideation → Plan → Execute → Optimize → Review), Gemini-led.
+前端专注工作流（研究 → 构思 → 计划 → 执行 → 优化 → 审查），由 Gemini 主导。
 
-## Usage
+## 用法
 
 ```bash
-/frontend <UI task description>
+/frontend <UI 任务描述>
 ```
 
-## Context
+## 上下文
 
-- Frontend task: $ARGUMENTS
-- Gemini-led, Codex for auxiliary reference
-- Applicable: Component design, responsive layout, UI animations, style optimization
+- 前端任务：$ARGUMENTS
+- Gemini 主导，Codex 辅助参考
+- 适用于：组件设计、响应式布局、UI 动画、样式优化
 
-## Your Role
+## 你的角色
 
-You are the **Frontend Orchestrator**, coordinating multi-model collaboration for UI/UX tasks (Research → Ideation → Plan → Execute → Optimize → Review).
+你是**前端编排器**，协调多模型协作进行 UI/UX 任务（研究 → 构思 → 计划 → 执行 → 优化 → 审查）。
 
-**Collaborative Models**:
-- **Gemini** – Frontend UI/UX (**Frontend authority, trustworthy**)
-- **Codex** – Backend perspective (**Frontend opinions for reference only**)
-- **Claude (self)** – Orchestration, planning, execution, delivery
+**协作模型**：
+- **Gemini** — 前端 UI/UX（**前端权威，可信赖**）
+- **Codex** — 后端视角（**前端意见仅供参考**）
+- **Claude（自身）** — 编排、规划、执行、交付
 
 ---
 
-## Multi-Model Call Specification
+## 多模型调用规范
 
-**Call Syntax**:
+**调用语法**：
 
 ```
-# New session call
+# 新会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend gemini --gemini-model gemini-3-pro-preview - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示词路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+Requirement: <增强后的需求（或未增强时的 $ARGUMENTS）>
+Context: <项目上下文和前几阶段的分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 预期输出格式
 EOF",
   run_in_background: false,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 
-# Resume session call
+# 恢复会话调用
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend gemini --gemini-model gemini-3-pro-preview resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示词路径>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+Requirement: <增强后的需求（或未增强时的 $ARGUMENTS）>
+Context: <项目上下文和前几阶段的分析>
 </TASK>
-OUTPUT: Expected output format
+OUTPUT: 预期输出格式
 EOF",
   run_in_background: false,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 ```
 
-**Role Prompts**:
+**角色提示词**：
 
-| Phase | Gemini |
-|-------|--------|
-| Analysis | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
-| Planning | `~/.claude/.ccg/prompts/gemini/architect.md` |
-| Review | `~/.claude/.ccg/prompts/gemini/reviewer.md` |
+| 阶段 | Gemini |
+|------|--------|
+| 分析 | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
+| 规划 | `~/.claude/.ccg/prompts/gemini/architect.md` |
+| 审查 | `~/.claude/.ccg/prompts/gemini/reviewer.md` |
 
-**Session Reuse**: Each call returns `SESSION_ID: xxx`, use `resume xxx` for subsequent phases. Save `GEMINI_SESSION` in Phase 2, use `resume` in Phases 3 and 5.
-
----
-
-## Communication Guidelines
-
-1. Start responses with mode label `[Mode: X]`, initial is `[Mode: Research]`
-2. Follow strict sequence: `Research → Ideation → Plan → Execute → Optimize → Review`
-3. Use `AskUserQuestion` tool for user interaction when needed (e.g., confirmation/selection/approval)
+**会话复用**：每次调用返回 `SESSION_ID: xxx`，后续阶段使用 `resume xxx`。在阶段 2 保存 `GEMINI_SESSION`，在阶段 3 和 5 使用 `resume`。
 
 ---
 
-## Core Workflow
+## 沟通指南
 
-### Phase 0: Prompt Enhancement (Optional)
-
-`[Mode: Prepare]` - If ace-tool MCP available, call `mcp__ace-tool__enhance_prompt`, **replace original $ARGUMENTS with enhanced result for subsequent Gemini calls**. If unavailable, use `$ARGUMENTS` as-is.
-
-### Phase 1: Research
-
-`[Mode: Research]` - Understand requirements and gather context
-
-1. **Code Retrieval** (if ace-tool MCP available): Call `mcp__ace-tool__search_context` to retrieve existing components, styles, design system. If unavailable, use built-in tools: `Glob` for file discovery, `Grep` for component/style search, `Read` for context gathering, `Task` (Explore agent) for deeper exploration.
-2. Requirement completeness score (0-10): >=7 continue, <7 stop and supplement
-
-### Phase 2: Ideation
-
-`[Mode: Ideation]` - Gemini-led analysis
-
-**MUST call Gemini** (follow call specification above):
-- ROLE_FILE: `~/.claude/.ccg/prompts/gemini/analyzer.md`
-- Requirement: Enhanced requirement (or $ARGUMENTS if not enhanced)
-- Context: Project context from Phase 1
-- OUTPUT: UI feasibility analysis, recommended solutions (at least 2), UX evaluation
-
-**Save SESSION_ID** (`GEMINI_SESSION`) for subsequent phase reuse.
-
-Output solutions (at least 2), wait for user selection.
-
-### Phase 3: Planning
-
-`[Mode: Plan]` - Gemini-led planning
-
-**MUST call Gemini** (use `resume <GEMINI_SESSION>` to reuse session):
-- ROLE_FILE: `~/.claude/.ccg/prompts/gemini/architect.md`
-- Requirement: User's selected solution
-- Context: Analysis results from Phase 2
-- OUTPUT: Component structure, UI flow, styling approach
-
-Claude synthesizes plan, save to `.claude/plan/task-name.md` after user approval.
-
-### Phase 4: Implementation
-
-`[Mode: Execute]` - Code development
-
-- Strictly follow approved plan
-- Follow existing project design system and code standards
-- Ensure responsiveness, accessibility
-
-### Phase 5: Optimization
-
-`[Mode: Optimize]` - Gemini-led review
-
-**MUST call Gemini** (follow call specification above):
-- ROLE_FILE: `~/.claude/.ccg/prompts/gemini/reviewer.md`
-- Requirement: Review the following frontend code changes
-- Context: git diff or code content
-- OUTPUT: Accessibility, responsiveness, performance, design consistency issues list
-
-Integrate review feedback, execute optimization after user confirmation.
-
-### Phase 6: Quality Review
-
-`[Mode: Review]` - Final evaluation
-
-- Check completion against plan
-- Verify responsiveness and accessibility
-- Report issues and recommendations
+1. 回复以模式标签 `[模式：X]` 开头，初始为 `[模式：研究]`
+2. 严格遵循顺序：`研究 → 构思 → 计划 → 执行 → 优化 → 审查`
+3. 需要用户交互时使用 `AskUserQuestion` 工具（例如确认/选择/批准）
 
 ---
 
-## Key Rules
+## 核心工作流
 
-1. **Gemini frontend opinions are trustworthy**
-2. **Codex frontend opinions for reference only**
-3. External models have **zero filesystem write access**
-4. Claude handles all code writes and file operations
+### 阶段 0：提示词增强（可选）
+
+`[模式：准备]` - 如果 ace-tool MCP 可用，调用 `mcp__ace-tool__enhance_prompt`，**将原始 $ARGUMENTS 替换为增强后的结果用于后续 Gemini 调用**。如不可用，按原样使用 `$ARGUMENTS`。
+
+### 阶段 1：研究
+
+`[模式：研究]` - 理解需求并收集上下文
+
+1. **代码检索**（如果 ace-tool MCP 可用）：调用 `mcp__ace-tool__search_context` 检索现有组件、样式、设计系统。如不可用，使用内置工具：`Glob` 发现文件，`Grep` 搜索组件/样式，`Read` 收集上下文，`Task`（Explore 代理）进行深入探索。
+2. 需求完整度评分（0-10）：>=7 继续，<7 停止并补充
+
+### 阶段 2：构思
+
+`[模式：构思]` - Gemini 主导分析
+
+**必须调用 Gemini**（遵循上述调用规范）：
+- ROLE_FILE：`~/.claude/.ccg/prompts/gemini/analyzer.md`
+- Requirement：增强后的需求（或未增强时的 $ARGUMENTS）
+- Context：阶段 1 的项目上下文
+- OUTPUT：UI 可行性分析、推荐方案（至少 2 个）、UX 评估
+
+**保存 SESSION_ID**（`GEMINI_SESSION`）用于后续阶段复用。
+
+输出方案（至少 2 个），等待用户选择。
+
+### 阶段 3：规划
+
+`[模式：计划]` - Gemini 主导规划
+
+**必须调用 Gemini**（使用 `resume <GEMINI_SESSION>` 复用会话）：
+- ROLE_FILE：`~/.claude/.ccg/prompts/gemini/architect.md`
+- Requirement：用户选择的方案
+- Context：阶段 2 的分析结果
+- OUTPUT：组件结构、UI 流程、样式方案
+
+Claude 综合计划，用户批准后保存到 `.claude/plan/task-name.md`。
+
+### 阶段 4：实现
+
+`[模式：执行]` - 代码开发
+
+- 严格遵循批准的计划
+- 遵循现有项目设计系统和代码标准
+- 确保响应式、可访问性
+
+### 阶段 5：优化
+
+`[模式：优化]` - Gemini 主导审查
+
+**必须调用 Gemini**（遵循上述调用规范）：
+- ROLE_FILE：`~/.claude/.ccg/prompts/gemini/reviewer.md`
+- Requirement：审查以下前端代码变更
+- Context：git diff 或代码内容
+- OUTPUT：可访问性、响应式、性能、设计一致性问题列表
+
+整合审查反馈，用户确认后执行优化。
+
+### 阶段 6：质量审查
+
+`[模式：审查]` - 最终评估
+
+- 对照计划检查完成情况
+- 验证响应式和可访问性
+- 报告问题和建议
+
+---
+
+## 关键规则
+
+1. **Gemini 的前端意见可信赖**
+2. **Codex 的前端意见仅供参考**
+3. 外部模型拥有**零文件系统写入权限**
+4. Claude 处理所有代码编写和文件操作

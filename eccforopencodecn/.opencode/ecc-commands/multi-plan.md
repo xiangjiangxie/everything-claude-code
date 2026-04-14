@@ -1,257 +1,257 @@
-# Plan - Multi-Model Collaborative Planning
+# 计划 - 多模型协作规划
 
-Multi-model collaborative planning - Context retrieval + Dual-model analysis → Generate step-by-step implementation plan.
+多模型协作规划 - 上下文检索 + 双模型分析 → 生成逐步实现计划。
 
 $ARGUMENTS
 
 ---
 
-## Core Protocols
+## 核心协议
 
-- **Language Protocol**: Use **English** when interacting with tools/models, communicate with user in their language
-- **Mandatory Parallel**: Codex/Gemini calls MUST use `run_in_background: true` (including single model calls, to avoid blocking main thread)
-- **Code Sovereignty**: External models have **zero filesystem write access**, all modifications by Claude
-- **Stop-Loss Mechanism**: Do not proceed to next phase until current phase output is validated
-- **Planning Only**: This command allows reading context and writing to `.claude/plan/*` plan files, but **NEVER modify production code**
+- **语言协议**：与工具/模型交互时使用**英文**，与用户以其语言沟通
+- **强制并行**：Codex/Gemini 调用必须使用 `run_in_background: true`（包括单模型调用，以避免阻塞主线程）
+- **代码主权**：外部模型拥有**零文件系统写入权限**，所有修改由 Claude 执行
+- **止损机制**：在当前阶段输出验证前不进入下一阶段
+- **仅规划**：此命令允许读取上下文和写入 `.claude/plan/*` 计划文件，但**绝不修改生产代码**
 
 ---
 
-## Multi-Model Call Specification
+## 多模型调用规范
 
-**Call Syntax** (parallel: use `run_in_background: true`):
+**调用语法**（并行：使用 `run_in_background: true`）：
 
 ```
 Bash({
   command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}- \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+ROLE_FILE: <角色提示词路径>
 <TASK>
-Requirement: <enhanced requirement>
-Context: <retrieved project context>
+Requirement: <增强后的需求>
+Context: <检索到的项目上下文>
 </TASK>
 OUTPUT: Step-by-step implementation plan with pseudo-code. DO NOT modify any files.
 EOF",
   run_in_background: true,
   timeout: 3600000,
-  description: "Brief description"
+  description: "简要描述"
 })
 ```
 
-**Model Parameter Notes**:
-- `{{GEMINI_MODEL_FLAG}}`: When using `--backend gemini`, replace with `--gemini-model gemini-3-pro-preview` (note trailing space); use empty string for codex
+**模型参数说明**：
+- `{{GEMINI_MODEL_FLAG}}`：使用 `--backend gemini` 时，替换为 `--gemini-model gemini-3-pro-preview `（注意末尾空格）；codex 时使用空字符串
 
-**Role Prompts**:
+**角色提示词**：
 
-| Phase | Codex | Gemini |
-|-------|-------|--------|
-| Analysis | `~/.claude/.ccg/prompts/codex/analyzer.md` | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
-| Planning | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/architect.md` |
+| 阶段 | Codex | Gemini |
+|------|-------|--------|
+| 分析 | `~/.claude/.ccg/prompts/codex/analyzer.md` | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
+| 规划 | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/architect.md` |
 
-**Session Reuse**: Each call returns `SESSION_ID: xxx` (typically output by wrapper), **MUST save** for subsequent `/ccg:execute` use.
+**会话复用**：每次调用返回 `SESSION_ID: xxx`（通常由 wrapper 输出），**必须保存**以供后续 `/ccg:execute` 使用。
 
-**Wait for Background Tasks** (max timeout 600000ms = 10 minutes):
+**等待后台任务**（最大超时 600000ms = 10 分钟）：
 
 ```
 TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 ```
 
-**IMPORTANT**:
-- Must specify `timeout: 600000`, otherwise default 30 seconds will cause premature timeout
-- If still incomplete after 10 minutes, continue polling with `TaskOutput`, **NEVER kill the process**
-- If waiting is skipped due to timeout, **MUST call `AskUserQuestion` to ask user whether to continue waiting or kill task**
+**重要提醒**：
+- 必须指定 `timeout: 600000`，否则默认 30 秒会导致过早超时
+- 如果 10 分钟后仍未完成，继续使用 `TaskOutput` 轮询，**绝不终止进程**
+- 如果因超时跳过等待，**必须调用 `AskUserQuestion` 询问用户是否继续等待或终止任务**
 
 ---
 
-## Execution Workflow
+## 执行工作流
 
-**Planning Task**: $ARGUMENTS
+**规划任务**：$ARGUMENTS
 
-### Phase 1: Full Context Retrieval
+### 阶段 1：完整上下文检索
 
-`[Mode: Research]`
+`[模式：研究]`
 
-#### 1.1 Prompt Enhancement (MUST execute first)
+#### 1.1 提示词增强（必须首先执行）
 
-**If ace-tool MCP is available**, call `mcp__ace-tool__enhance_prompt` tool:
+**如果 ace-tool MCP 可用**，调用 `mcp__ace-tool__enhance_prompt` 工具：
 
 ```
 mcp__ace-tool__enhance_prompt({
   prompt: "$ARGUMENTS",
-  conversation_history: "<last 5-10 conversation turns>",
+  conversation_history: "<最近 5-10 轮对话>",
   project_root_path: "$PWD"
 })
 ```
 
-Wait for enhanced prompt, **replace original $ARGUMENTS with enhanced result** for all subsequent phases.
+等待增强后的提示词，**将原始 $ARGUMENTS 替换为增强后的结果**用于所有后续阶段。
 
-**If ace-tool MCP is NOT available**: Skip this step and use the original `$ARGUMENTS` as-is for all subsequent phases.
+**如果 ace-tool MCP 不可用**：跳过此步骤，按原样使用原始 `$ARGUMENTS` 用于所有后续阶段。
 
-#### 1.2 Context Retrieval
+#### 1.2 上下文检索
 
-**If ace-tool MCP is available**, call `mcp__ace-tool__search_context` tool:
+**如果 ace-tool MCP 可用**，调用 `mcp__ace-tool__search_context` 工具：
 
 ```
 mcp__ace-tool__search_context({
-  query: "<semantic query based on enhanced requirement>",
+  query: "<基于增强后需求的语义查询>",
   project_root_path: "$PWD"
 })
 ```
 
-- Build semantic query using natural language (Where/What/How)
-- **NEVER answer based on assumptions**
+- 使用自然语言（Where/What/How）构建语义查询
+- **绝不基于假设回答**
 
-**If ace-tool MCP is NOT available**, use Claude Code built-in tools as fallback:
-1. **Glob**: Find relevant files by pattern (e.g., `Glob("**/*.ts")`, `Glob("src/**/*.py")`)
-2. **Grep**: Search for key symbols, function names, class definitions (e.g., `Grep("className|functionName")`)
-3. **Read**: Read the discovered files to gather complete context
-4. **Task (Explore agent)**: For deeper exploration, use `Task` with `subagent_type: "Explore"` to search across the codebase
+**如果 ace-tool MCP 不可用**，使用 Claude Code 内置工具作为回退：
+1. **Glob**：按模式查找相关文件（例如 `Glob("**/*.ts")`、`Glob("src/**/*.py")`）
+2. **Grep**：搜索关键符号、函数名、类定义（例如 `Grep("className|functionName")`）
+3. **Read**：读取发现的文件以收集完整上下文
+4. **Task（Explore 代理）**：对于更深入的探索，使用 `Task` 配合 `subagent_type: "Explore"` 跨代码库搜索
 
-#### 1.3 Completeness Check
+#### 1.3 完整性检查
 
-- Must obtain **complete definitions and signatures** for relevant classes, functions, variables
-- If context insufficient, trigger **recursive retrieval**
-- Prioritize output: entry file + line number + key symbol name; add minimal code snippets only when necessary to resolve ambiguity
+- 必须获取相关类、函数、变量的**完整定义和签名**
+- 如果上下文不充分，触发**递归检索**
+- 输出优先级：入口文件 + 行号 + 关键符号名；仅在必要时添加最小代码片段以消除歧义
 
-#### 1.4 Requirement Alignment
+#### 1.4 需求对齐
 
-- If requirements still have ambiguity, **MUST** output guiding questions for user
-- Until requirement boundaries are clear (no omissions, no redundancy)
+- 如果需求仍有歧义，**必须**输出引导问题给用户
+- 直到需求边界清晰（无遗漏、无冗余）
 
-### Phase 2: Multi-Model Collaborative Analysis
+### 阶段 2：多模型协作分析
 
-`[Mode: Analysis]`
+`[模式：分析]`
 
-#### 2.1 Distribute Inputs
+#### 2.1 分发输入
 
-**Parallel call** Codex and Gemini (`run_in_background: true`):
+**并行调用** Codex 和 Gemini（`run_in_background: true`）：
 
-Distribute **original requirement** (without preset opinions) to both models:
+将**原始需求**（不带预设观点）分发给两个模型：
 
-1. **Codex Backend Analysis**:
-   - ROLE_FILE: `~/.claude/.ccg/prompts/codex/analyzer.md`
-   - Focus: Technical feasibility, architecture impact, performance considerations, potential risks
-   - OUTPUT: Multi-perspective solutions + pros/cons analysis
+1. **Codex 后端分析**：
+   - ROLE_FILE：`~/.claude/.ccg/prompts/codex/analyzer.md`
+   - 重点：技术可行性、架构影响、性能考虑、潜在风险
+   - OUTPUT：多角度解决方案 + 利弊分析
 
-2. **Gemini Frontend Analysis**:
-   - ROLE_FILE: `~/.claude/.ccg/prompts/gemini/analyzer.md`
-   - Focus: UI/UX impact, user experience, visual design
-   - OUTPUT: Multi-perspective solutions + pros/cons analysis
+2. **Gemini 前端分析**：
+   - ROLE_FILE：`~/.claude/.ccg/prompts/gemini/analyzer.md`
+   - 重点：UI/UX 影响、用户体验、视觉设计
+   - OUTPUT：多角度解决方案 + 利弊分析
 
-Wait for both models' complete results with `TaskOutput`. **Save SESSION_ID** (`CODEX_SESSION` and `GEMINI_SESSION`).
+使用 `TaskOutput` 等待两个模型的完整结果。**保存 SESSION_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
 
-#### 2.2 Cross-Validation
+#### 2.2 交叉验证
 
-Integrate perspectives and iterate for optimization:
+整合视角并迭代优化：
 
-1. **Identify consensus** (strong signal)
-2. **Identify divergence** (needs weighing)
-3. **Complementary strengths**: Backend logic follows Codex, Frontend design follows Gemini
-4. **Logical reasoning**: Eliminate logical gaps in solutions
+1. **识别共识**（强信号）
+2. **识别分歧**（需要权衡）
+3. **互补优势**：后端逻辑遵循 Codex，前端设计遵循 Gemini
+4. **逻辑推理**：消除解决方案中的逻辑空白
 
-#### 2.3 (Optional but Recommended) Dual-Model Plan Draft
+#### 2.3（可选但推荐）双模型计划草稿
 
-To reduce risk of omissions in Claude's synthesized plan, can parallel have both models output "plan drafts" (still **NOT allowed** to modify files):
+为减少 Claude 综合计划中的遗漏风险，可并行让两个模型输出"计划草稿"（仍**不允许**修改文件）：
 
-1. **Codex Plan Draft** (Backend authority):
-   - ROLE_FILE: `~/.claude/.ccg/prompts/codex/architect.md`
-   - OUTPUT: Step-by-step plan + pseudo-code (focus: data flow/edge cases/error handling/test strategy)
+1. **Codex 计划草稿**（后端权威）：
+   - ROLE_FILE：`~/.claude/.ccg/prompts/codex/architect.md`
+   - OUTPUT：逐步计划 + 伪代码（重点：数据流/边界情况/错误处理/测试策略）
 
-2. **Gemini Plan Draft** (Frontend authority):
-   - ROLE_FILE: `~/.claude/.ccg/prompts/gemini/architect.md`
-   - OUTPUT: Step-by-step plan + pseudo-code (focus: information architecture/interaction/accessibility/visual consistency)
+2. **Gemini 计划草稿**（前端权威）：
+   - ROLE_FILE：`~/.claude/.ccg/prompts/gemini/architect.md`
+   - OUTPUT：逐步计划 + 伪代码（重点：信息架构/交互/可访问性/视觉一致性）
 
-Wait for both models' complete results with `TaskOutput`, record key differences in their suggestions.
+使用 `TaskOutput` 等待两个模型的完整结果，记录它们建议中的关键差异。
 
-#### 2.4 Generate Implementation Plan (Claude Final Version)
+#### 2.4 生成实现计划（Claude 最终版本）
 
-Synthesize both analyses, generate **Step-by-step Implementation Plan**:
+综合两个分析，生成**逐步实现计划**：
 
 ```markdown
-## Implementation Plan: <Task Name>
+## 实现计划：<任务名称>
 
-### Task Type
-- [ ] Frontend (→ Gemini)
-- [ ] Backend (→ Codex)
-- [ ] Fullstack (→ Parallel)
+### 任务类型
+- [ ] 前端（→ Gemini）
+- [ ] 后端（→ Codex）
+- [ ] 全栈（→ 并行）
 
-### Technical Solution
-<Optimal solution synthesized from Codex + Gemini analysis>
+### 技术方案
+<综合 Codex + Gemini 分析后的最优方案>
 
-### Implementation Steps
-1. <Step 1> - Expected deliverable
-2. <Step 2> - Expected deliverable
+### 实现步骤
+1. <步骤 1> - 预期交付物
+2. <步骤 2> - 预期交付物
 ...
 
-### Key Files
-| File | Operation | Description |
-|------|-----------|-------------|
-| path/to/file.ts:L10-L50 | Modify | Description |
+### 关键文件
+| 文件 | 操作 | 描述 |
+|------|------|------|
+| path/to/file.ts:L10-L50 | 修改 | 描述 |
 
-### Risks and Mitigation
-| Risk | Mitigation |
-|------|------------|
+### 风险和缓解
+| 风险 | 缓解措施 |
+|------|---------|
 
-### SESSION_ID (for /ccg:execute use)
+### SESSION_ID（供 /ccg:execute 使用）
 - CODEX_SESSION: <session_id>
 - GEMINI_SESSION: <session_id>
 ```
 
-### Phase 2 End: Plan Delivery (Not Execution)
+### 阶段 2 结束：计划交付（非执行）
 
-**`/ccg:plan` responsibilities end here, MUST execute the following actions**:
+**`/ccg:plan` 的职责到此结束，必须执行以下操作**：
 
-1. Present complete implementation plan to user (including pseudo-code)
-2. Save plan to `.claude/plan/<feature-name>.md` (extract feature name from requirement, e.g., `user-auth`, `payment-module`)
-3. Output prompt in **bold text** (MUST use actual saved file path):
+1. 向用户呈现完整的实现计划（包括伪代码）
+2. 将计划保存到 `.claude/plan/<feature-name>.md`（从需求中提取功能名称，例如 `user-auth`、`payment-module`）
+3. 以**粗体**输出提示（必须使用实际保存的文件路径）：
 
    ---
-   **Plan generated and saved to `.claude/plan/actual-feature-name.md`**
+   **计划已生成并保存到 `.claude/plan/actual-feature-name.md`**
 
-   **Please review the plan above. You can:**
-   - **Modify plan**: Tell me what needs adjustment, I'll update the plan
-   - **Execute plan**: Copy the following command to a new session
+   **请审查上面的计划。你可以：**
+   - **修改计划**：告诉我需要调整什么，我会更新计划
+   - **执行计划**：将以下命令复制到新会话
 
    ```
    /ccg:execute .claude/plan/actual-feature-name.md
    ```
    ---
 
-   **NOTE**: The `actual-feature-name.md` above MUST be replaced with the actual saved filename!
+   **注意**：上面的 `actual-feature-name.md` 必须替换为实际保存的文件名！
 
-4. **Immediately terminate current response** (Stop here. No more tool calls.)
+4. **立即终止当前回复**（到此停止。不再有工具调用。）
 
-**ABSOLUTELY FORBIDDEN**:
-- Ask user "Y/N" then auto-execute (execution is `/ccg:execute`'s responsibility)
-- Any write operations to production code
-- Automatically call `/ccg:execute` or any implementation actions
-- Continue triggering model calls when user hasn't explicitly requested modifications
-
----
-
-## Plan Saving
-
-After planning completes, save plan to:
-
-- **First planning**: `.claude/plan/<feature-name>.md`
-- **Iteration versions**: `.claude/plan/<feature-name>-v2.md`, `.claude/plan/<feature-name>-v3.md`...
-
-Plan file write should complete before presenting plan to user.
+**绝对禁止**：
+- 询问用户"Y/N"然后自动执行（执行是 `/ccg:execute` 的职责）
+- 任何对生产代码的写入操作
+- 自动调用 `/ccg:execute` 或任何实现操作
+- 用户未明确请求修改时继续触发模型调用
 
 ---
 
-## Plan Modification Flow
+## 计划保存
 
-If user requests plan modifications:
+规划完成后，保存计划到：
 
-1. Adjust plan content based on user feedback
-2. Update `.claude/plan/<feature-name>.md` file
-3. Re-present modified plan
-4. Prompt user to review or execute again
+- **首次规划**：`.claude/plan/<feature-name>.md`
+- **迭代版本**：`.claude/plan/<feature-name>-v2.md`、`.claude/plan/<feature-name>-v3.md`...
+
+计划文件写入应在向用户呈现计划前完成。
 
 ---
 
-## Next Steps
+## 计划修改流程
 
-After user approves, **manually** execute:
+如果用户请求修改计划：
+
+1. 根据用户反馈调整计划内容
+2. 更新 `.claude/plan/<feature-name>.md` 文件
+3. 重新呈现修改后的计划
+4. 再次提示用户审查或执行
+
+---
+
+## 后续步骤
+
+用户批准后，**手动**执行：
 
 ```bash
 /ccg:execute .claude/plan/<feature-name>.md
@@ -259,10 +259,10 @@ After user approves, **manually** execute:
 
 ---
 
-## Key Rules
+## 关键规则
 
-1. **Plan only, no implementation** – This command does not execute any code changes
-2. **No Y/N prompts** – Only present plan, let user decide next steps
-3. **Trust Rules** – Backend follows Codex, Frontend follows Gemini
-4. External models have **zero filesystem write access**
-5. **SESSION_ID Handoff** – Plan must include `CODEX_SESSION` / `GEMINI_SESSION` at end (for `/ccg:execute resume <SESSION_ID>` use)
+1. **仅规划，不实现** — 此命令不执行任何代码变更
+2. **不要 Y/N 提示** — 仅呈现计划，让用户决定后续步骤
+3. **信任规则** — 后端遵循 Codex，前端遵循 Gemini
+4. 外部模型拥有**零文件系统写入权限**
+5. **SESSION_ID 交接** — 计划末尾必须包含 `CODEX_SESSION` / `GEMINI_SESSION`（供 `/ccg:execute resume <SESSION_ID>` 使用）
