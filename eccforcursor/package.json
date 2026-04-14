@@ -1,0 +1,41 @@
+{
+  "name": "eccforcursor",
+  "version": "1.0.0",
+  "description": "ECC for Cursor — 从 Everything Claude Code 中提取的 Cursor IDE 专用插件，包含钩子、规则、技能和智能体",
+  "author": "ECC Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/affaan-m/everything-claude-code"
+  },
+  "keywords": [
+    "cursor",
+    "cursor-ide",
+    "ai-coding",
+    "hooks",
+    "rules",
+    "skills",
+    "agents",
+    "code-review",
+    "tdd",
+    "security"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "eccforcursor": "install.js"
+  },
+  "scripts": {
+    "install-to": "node install.js",
+    "verify": "node verify.js"
+  },
+  "files": [
+    ".cursor/",
+    "scripts/",
+    "agents/",
+    "install.js",
+    "verify.js",
+    "README.md"
+  ]
+}
