@@ -1,0 +1,121 @@
+{
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node .cursor/hooks/session-start.js",
+        "event": "sessionStart",
+        "description": "加载上次会话上下文、检测项目类型和包管理器"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node .cursor/hooks/session-end.js",
+        "event": "sessionEnd",
+        "description": "会话结束标记"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "npx block-no-verify@1.1.2",
+        "event": "beforeShellExecution",
+        "description": "阻止 git hook-bypass 标志，保护 pre-commit/commit-msg/pre-push 钩子"
+      },
+      {
+        "command": "node .cursor/hooks/before-shell-execution-full.js",
+        "event": "beforeShellExecution",
+        "description": "完整Shell防护：dev server拦截、auto-tmux、tmux提醒、git push审查、提交质量、治理捕获、安全监控"
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "node .cursor/hooks/after-shell-execution-full.js",
+        "event": "afterShellExecution",
+        "description": "PR URL记录、构建完成通知、治理事件捕获"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "node .cursor/hooks/after-file-edit-full.js",
+        "event": "afterFileEdit",
+        "description": "完整编辑后检查：格式化、类型检查、console.log警告、质量门禁、压缩建议、配置保护、治理捕获"
+      }
+    ],
+    "beforeFileWrite": [
+      {
+        "command": "node .cursor/hooks/before-file-write.js",
+        "event": "beforeFileWrite",
+        "description": "文件写入前检查：文档文件警告、压缩建议、配置保护"
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "node .cursor/hooks/before-mcp-execution-full.js",
+        "event": "beforeMCPExecution",
+        "description": "MCP调用审计日志 + 服务器健康检查"
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "node .cursor/hooks/after-mcp-execution.js",
+        "event": "afterMCPExecution",
+        "description": "MCP结果记录"
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "node .cursor/hooks/before-read-file.js",
+        "event": "beforeReadFile",
+        "description": "敏感文件（.env/.key/.pem）读取警告"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "node .cursor/hooks/before-submit-prompt.js",
+        "event": "beforeSubmitPrompt",
+        "description": "检测提示词中的API密钥、令牌等敏感信息"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "node .cursor/hooks/subagent-start.js",
+        "event": "subagentStart",
+        "description": "记录子智能体启动信息"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "node .cursor/hooks/subagent-stop.js",
+        "event": "subagentStop",
+        "description": "记录子智能体完成信息"
+      }
+    ],
+    "beforeTabFileRead": [
+      {
+        "command": "node .cursor/hooks/before-tab-file-read.js",
+        "event": "beforeTabFileRead",
+        "description": "阻止Tab读取敏感文件（.env/.key/.pem/credentials）"
+      }
+    ],
+    "afterTabFileEdit": [
+      {
+        "command": "node .cursor/hooks/after-tab-file-edit.js",
+        "event": "afterTabFileEdit",
+        "description": "Tab编辑后自动格式化"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "node .cursor/hooks/pre-compact.js",
+        "event": "preCompact",
+        "description": "上下文压缩前保存状态"
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/stop-full.js",
+        "event": "stop",
+        "description": "完整停止检查：console.log审计、会话保存、模式评估、成本追踪、桌面通知"
+      }
+    ]
+  }
+}

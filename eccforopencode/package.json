@@ -1,0 +1,38 @@
+{
+  "name": "eccforopencode",
+  "version": "1.0.0",
+  "description": "ECC for OpenCode — 从 Everything Claude Code 中提取的 OpenCode 专用插件，包含钩子、规则、技能、智能体和命令",
+  "author": "ECC Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/affaan-m/everything-claude-code"
+  },
+  "keywords": [
+    "opencode",
+    "ai-coding",
+    "hooks",
+    "rules",
+    "skills",
+    "agents",
+    "code-review",
+    "tdd",
+    "security"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "eccforopencode": "install.js"
+  },
+  "scripts": {
+    "install-to": "node install.js",
+    "verify": "node verify.js"
+  },
+  "files": [
+    ".opencode/",
+    "install.js",
+    "verify.js",
+    "README.md"
+  ]
+}

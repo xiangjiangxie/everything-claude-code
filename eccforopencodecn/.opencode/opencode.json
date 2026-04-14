@@ -1,0 +1,319 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "build",
+  "instructions": [
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "instructions/INSTRUCTIONS.md",
+    "skills/tdd-workflow/SKILL.md",
+    "skills/security-review/SKILL.md",
+    "skills/coding-standards/SKILL.md",
+    "skills/frontend-patterns/SKILL.md",
+    "skills/frontend-slides/SKILL.md",
+    "skills/backend-patterns/SKILL.md",
+    "skills/e2e-testing/SKILL.md",
+    "skills/verification-loop/SKILL.md",
+    "skills/api-design/SKILL.md",
+    "skills/strategic-compact/SKILL.md",
+    "skills/eval-harness/SKILL.md"
+  ],
+  "plugin": [
+    "./plugins"
+  ],
+  "agent": {
+    "build": {
+      "description": "用于开发工作的主要编码代理",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-5",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "read": true
+      }
+    },
+    "planner": {
+      "description": "复杂功能和重构的专业规划专家。用于实现规划、架构变更或复杂重构。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/planner.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "architect": {
+      "description": "专注于系统设计、可扩展性和技术决策的软件架构专家。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/architect.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "code-reviewer": {
+      "description": "专业代码审查专家。审查代码的质量、安全性和可维护性。在编写或修改代码后立即使用。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/code-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "security-reviewer": {
+      "description": "安全漏洞检测和修复专家。在编写处理用户输入、认证、API 端点或敏感数据的代码后使用。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/security-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": true,
+        "edit": true
+      }
+    },
+    "tdd-guide": {
+      "description": "测试驱动开发专家，执行先写测试的方法论。在编写新功能、修复 Bug 或重构代码时使用。确保 80% 以上的测试覆盖率。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/tdd-guide.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "build-error-resolver": {
+      "description": "构建和 TypeScript 错误解决专家。在构建失败或出现类型错误时使用。仅以最小改动修复构建/类型错误。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/build-error-resolver.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "e2e-runner": {
+      "description": "使用 Playwright 的端到端测试专家。生成、维护和运行关键用户流程的 E2E 测试。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/e2e-runner.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "doc-updater": {
+      "description": "文档和代码地图专家。用于更新代码地图和文档。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/doc-updater.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "refactor-cleaner": {
+      "description": "死代码清理和整合专家。用于移除未使用的代码、重复代码和重构。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/refactor-cleaner.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "go-reviewer": {
+      "description": "专业 Go 代码审查者，擅长地道的 Go 风格、并发模式、错误处理和性能优化。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/go-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "go-build-resolver": {
+      "description": "Go 构建、vet 和编译错误解决专家。以最小改动修复 Go 构建错误。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/go-build-resolver.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "database-reviewer": {
+      "description": "PostgreSQL 数据库专家，负责查询优化、模式设计、安全性和性能。融合 Supabase 最佳实践。",
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-5",
+      "prompt": "{file:prompts/agents/database-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
+  "command": {
+    "plan": {
+      "description": "为复杂功能创建详细的实现计划",
+      "template": "{file:commands/plan.md}\n\n$ARGUMENTS",
+      "agent": "planner",
+      "subtask": true
+    },
+    "tdd": {
+      "description": "执行 TDD 工作流，确保 80% 以上测试覆盖率",
+      "template": "{file:commands/tdd.md}\n\n$ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+    "code-review": {
+      "description": "审查代码的质量、安全性和可维护性",
+      "template": "{file:commands/code-review.md}\n\n$ARGUMENTS",
+      "agent": "code-reviewer",
+      "subtask": true
+    },
+    "security": {
+      "description": "运行全面的安全审查",
+      "template": "{file:commands/security.md}\n\n$ARGUMENTS",
+      "agent": "security-reviewer",
+      "subtask": true
+    },
+    "build-fix": {
+      "description": "以最小改动修复构建和 TypeScript 错误",
+      "template": "{file:commands/build-fix.md}\n\n$ARGUMENTS",
+      "agent": "build-error-resolver",
+      "subtask": true
+    },
+    "e2e": {
+      "description": "使用 Playwright 生成和运行 E2E 测试",
+      "template": "{file:commands/e2e.md}\n\n$ARGUMENTS",
+      "agent": "e2e-runner",
+      "subtask": true
+    },
+    "refactor-clean": {
+      "description": "移除死代码并整合重复代码",
+      "template": "{file:commands/refactor-clean.md}\n\n$ARGUMENTS",
+      "agent": "refactor-cleaner",
+      "subtask": true
+    },
+    "orchestrate": {
+      "description": "为复杂任务编排多个代理协作",
+      "template": "{file:commands/orchestrate.md}\n\n$ARGUMENTS",
+      "agent": "planner",
+      "subtask": true
+    },
+    "learn": {
+      "description": "从会话中提取模式和经验",
+      "template": "{file:commands/learn.md}\n\n$ARGUMENTS"
+    },
+    "checkpoint": {
+      "description": "保存验证状态和进度",
+      "template": "{file:commands/checkpoint.md}\n\n$ARGUMENTS"
+    },
+    "verify": {
+      "description": "运行验证循环",
+      "template": "{file:commands/verify.md}\n\n$ARGUMENTS"
+    },
+    "eval": {
+      "description": "按标准运行评估",
+      "template": "{file:commands/eval.md}\n\n$ARGUMENTS"
+    },
+    "update-docs": {
+      "description": "更新文档",
+      "template": "{file:commands/update-docs.md}\n\n$ARGUMENTS",
+      "agent": "doc-updater",
+      "subtask": true
+    },
+    "update-codemaps": {
+      "description": "更新代码地图",
+      "template": "{file:commands/update-codemaps.md}\n\n$ARGUMENTS",
+      "agent": "doc-updater",
+      "subtask": true
+    },
+    "test-coverage": {
+      "description": "分析测试覆盖率",
+      "template": "{file:commands/test-coverage.md}\n\n$ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+    "setup-pm": {
+      "description": "配置包管理器",
+      "template": "{file:commands/setup-pm.md}\n\n$ARGUMENTS"
+    },
+    "go-review": {
+      "description": "Go 代码审查",
+      "template": "{file:commands/go-review.md}\n\n$ARGUMENTS",
+      "agent": "go-reviewer",
+      "subtask": true
+    },
+    "go-test": {
+      "description": "Go TDD 工作流",
+      "template": "{file:commands/go-test.md}\n\n$ARGUMENTS",
+      "agent": "tdd-guide",
+      "subtask": true
+    },
+    "go-build": {
+      "description": "修复 Go 构建错误",
+      "template": "{file:commands/go-build.md}\n\n$ARGUMENTS",
+      "agent": "go-build-resolver",
+      "subtask": true
+    },
+    "skill-create": {
+      "description": "从 git 历史生成技能",
+      "template": "{file:commands/skill-create.md}\n\n$ARGUMENTS"
+    },
+    "instinct-status": {
+      "description": "查看已学习的直觉模式",
+      "template": "{file:commands/instinct-status.md}\n\n$ARGUMENTS"
+    },
+    "instinct-import": {
+      "description": "导入直觉模式",
+      "template": "{file:commands/instinct-import.md}\n\n$ARGUMENTS"
+    },
+    "instinct-export": {
+      "description": "导出直觉模式",
+      "template": "{file:commands/instinct-export.md}\n\n$ARGUMENTS"
+    },
+    "evolve": {
+      "description": "将直觉模式聚类为技能",
+      "template": "{file:commands/evolve.md}\n\n$ARGUMENTS"
+    },
+    "promote": {
+      "description": "将项目直觉模式提升为全局范围",
+      "template": "{file:commands/promote.md}\n\n$ARGUMENTS"
+    },
+    "projects": {
+      "description": "列出已知项目和直觉模式统计",
+      "template": "{file:commands/projects.md}\n\n$ARGUMENTS"
+    }
+  },
+  "permission": {
+    "mcp_*": "ask"
+  }
+}
