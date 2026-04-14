@@ -68,11 +68,16 @@ function transformToClaude(cursorInput, overrides = {}) {
 
 /**
  * 运行已有的 Claude Code 钩子脚本
+ *
+ * 脚本位于 .cursor/ecc-scripts/hooks/ 目录下。
+ * adapter.js 在 .cursor/hooks/ 下，getPluginRoot() 返回项目根，
+ * 所以路径为 项目根/.cursor/ecc-scripts/hooks/scriptName
+ *
  * @param {string} scriptName - 脚本文件名（如 'session-start.js'）
  * @param {string|object} stdinData - 传递给脚本的 stdin 数据
  */
 function runExistingHook(scriptName, stdinData) {
-  const scriptPath = path.join(getPluginRoot(), 'scripts', 'hooks', scriptName);
+  const scriptPath = path.join(getPluginRoot(), '.cursor', 'ecc-scripts', 'hooks', scriptName);
   try {
     execFileSync('node', [scriptPath], {
       input: typeof stdinData === 'string' ? stdinData : JSON.stringify(stdinData),

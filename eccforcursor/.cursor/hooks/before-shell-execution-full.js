@@ -12,7 +12,7 @@
  * 7. InsAIts 安全监控 — standard/strict（需 ECC_ENABLE_INSAITS=1）
  */
 const { readStdin, hookEnabled, runExistingHook, transformToClaude } = require('./adapter');
-const { splitShellSegments } = require('../../scripts/lib/shell-split');
+const { splitShellSegments } = require('../ecc-scripts/lib/shell-split');
 
 readStdin()
   .then(raw => {

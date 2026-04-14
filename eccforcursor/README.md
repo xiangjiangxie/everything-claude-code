@@ -31,9 +31,15 @@ cd everything-claude-code/eccforcursor
 node install.js /path/to/your/project
 ```
 
-### 方法二：手动复制
+### 方法二：手动复制（推荐，最简单）
 
-将 `eccforcursor/.cursor/` 目录复制到你的项目根目录即可。
+直接将 `eccforcursor/.cursor/` 目录复制到你的项目根目录：
+
+```bash
+cp -r eccforcursor/.cursor/ /path/to/your/project/.cursor/
+```
+
+`.cursor/` 目录是完全自包含的，包含全部功能，无需外部依赖。
 
 ### 验证安装
 

@@ -8,7 +8,7 @@
  * 3. git push 前审查提醒（仅 strict）
  */
 const { readStdin, hookEnabled } = require('./adapter');
-const { splitShellSegments } = require('../../scripts/lib/shell-split');
+const { splitShellSegments } = require('../ecc-scripts/lib/shell-split');
 
 readStdin()
   .then(raw => {

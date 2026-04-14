@@ -21,24 +21,19 @@ const path = require('path');
 const SOURCE_ROOT = __dirname;
 
 // 需要复制的目录及其在目标项目中的映射关系
+// 所有内容均已整合到 .cursor/ 下，一次复制即可获得完整功能
 const COPY_MAP = [
-  // 核心 Cursor 配置
+  // 整个 .cursor/ 目录（自包含，包含全部功能）
   { src: '.cursor/hooks.json', dest: '.cursor/hooks.json', type: 'file' },
+  { src: '.cursor/mcp.json', dest: '.cursor/mcp.json', type: 'file' },
   { src: '.cursor/hooks', dest: '.cursor/hooks', type: 'dir' },
   { src: '.cursor/rules', dest: '.cursor/rules', type: 'dir' },
   { src: '.cursor/skills', dest: '.cursor/skills', type: 'dir' },
-  // 运行时脚本（钩子核心逻辑 + 工具库 + CLI）
-  { src: 'scripts', dest: '.cursor/ecc-scripts', type: 'dir' },
-  // 全部 30 个智能体
-  { src: 'agents', dest: '.cursor/agents', type: 'dir' },
-  // 全部 60 个命令
-  { src: 'commands', dest: '.cursor/commands', type: 'dir' },
-  // 全部 135 个技能（完整版）
-  { src: 'skills', dest: '.cursor/ecc-skills', type: 'dir' },
-  // 上下文文件
-  { src: 'contexts', dest: '.cursor/contexts', type: 'dir' },
-  // MCP 服务器配置
-  { src: '.mcp.json', dest: '.cursor/mcp.json', type: 'file' },
+  { src: '.cursor/agents', dest: '.cursor/agents', type: 'dir' },
+  { src: '.cursor/commands', dest: '.cursor/commands', type: 'dir' },
+  { src: '.cursor/ecc-skills', dest: '.cursor/ecc-skills', type: 'dir' },
+  { src: '.cursor/ecc-scripts', dest: '.cursor/ecc-scripts', type: 'dir' },
+  { src: '.cursor/contexts', dest: '.cursor/contexts', type: 'dir' },
 ];
 
 /**
@@ -117,7 +112,7 @@ eccforcursor 安装工具
   --help, -h   显示此帮助信息
 
 说明:
-  将 eccforcursor 的全部内容安装到目标项目的 .cursor/ 目录中，包括：
+  将 eccforcursor/.cursor/ 目录复制到目标项目中（自包含，无外部依赖），包括：
   - 钩子配置和脚本（16 种自动化钩子，含增强版功能）
   - 编码规则（39 条，覆盖 6 种编程语言）
   - AI 技能定义（135 个技能 + .cursor/ 中的 10 个精选技能）
@@ -211,9 +206,6 @@ function install(targetDir, dryRun) {
     }
   }
 
-  // 修改 hooks.json 中的脚本路径，使其指向 .cursor/ecc-scripts/
-  fixHooksPaths(targetDir);
-
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`✅ 安装完成!`);
   console.log(`   已复制: ${copied} 个文件`);
@@ -227,32 +219,6 @@ function install(targetDir, dryRun) {
   console.log(`   3. 通过 ECC_DISABLED_HOOKS 禁用特定钩子`);
   console.log(`   4. MCP 配置已安装到 .cursor/mcp.json`);
   console.log(`   5. 全部 30 个智能体、135 个技能、60 个命令已就绪\n`);
-}
-
-/**
- * 修复安装后的钩子路径引用
- *
- * 原始 hooks.json 中脚本路径引用 .cursor/hooks/ 下的文件，
- * 而这些脚本内部通过 adapter.js 调用 scripts/hooks/ 下的核心实现。
- * adapter.js 的 getPluginRoot() 返回 __dirname/../..，即项目根目录。
- * 安装后 scripts/ 被放到 .cursor/ecc-scripts/，需要更新 adapter.js 的路径。
- */
-function fixHooksPaths(targetDir) {
-  const adapterPath = path.join(targetDir, '.cursor', 'hooks', 'adapter.js');
-  if (!fs.existsSync(adapterPath)) return;
-
-  let content = fs.readFileSync(adapterPath, 'utf8');
-
-  // adapter.js 中 getPluginRoot() 返回 path.resolve(__dirname, '..', '..')
-  // 安装后 adapter.js 位于 .cursor/hooks/adapter.js
-  // getPluginRoot() 会返回项目根目录，然后拼接 scripts/hooks/
-  // 我们需要改为拼接 .cursor/ecc-scripts/hooks/
-  content = content.replace(
-    "const scriptPath = path.join(getPluginRoot(), 'scripts', 'hooks', scriptName);",
-    "const scriptPath = path.join(getPluginRoot(), '.cursor', 'ecc-scripts', 'hooks', scriptName);"
-  );
-
-  fs.writeFileSync(adapterPath, content, 'utf8');
 }
 
 /**
